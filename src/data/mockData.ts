@@ -16,7 +16,7 @@ export const users: User[] = [
   {
     id: 'admin-001',
     email: 'armando@armandofitness.com',
-    name: 'Armando García',
+    name: 'Luis Armando Incio',
     phone: '+1 555 123 4567',
     role: 'admin',
     avatarUrl: null,

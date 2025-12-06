@@ -153,7 +153,7 @@ CREATE TABLE notifications (
 
 -- Insertar usuario administrador (Armando)
 INSERT INTO users (id, email, password_hash, name, phone, role) VALUES
-('admin-001', 'armando@armandofitness.com', '$2b$10$examplehashhere', 'Armando García', '+1 555 123 4567', 'admin');
+('admin-001', 'armando@armandofitness.com', '$2b$10$examplehashhere', 'Luis Armando Incio', '+1 555 123 4567', 'admin');
 
 -- Insertar planes
 INSERT INTO plans (id, name, description, classes_per_month, price, features, is_popular) VALUES
