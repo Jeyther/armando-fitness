@@ -5,7 +5,7 @@ import Contact from '../components/landing/Contact';
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col gap-0">
+    <>
       <section id="home">
         <Hero />
       </section>
@@ -18,6 +18,6 @@ export default function LandingPage() {
       <section id="contact">
         <Contact />
       </section>
-    </div>
+    </>
   );
 }

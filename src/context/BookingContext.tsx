@@ -1,29 +1,60 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { bookings as initialBookings, trainerAvailability, availabilityExceptions, subscriptions } from '../data/mockData';
+import type { Booking, DayAvailability, BookingStats } from '../types';
 
-const BookingContext = createContext(null);
+interface BookingResult {
+  success: boolean;
+  booking?: Booking;
+  error?: string;
+}
 
-export const BookingProvider = ({ children }) => {
-  const [bookings, setBookings] = useState([...initialBookings]);
+interface BookingContextType {
+  bookings: Booking[];
+  getAvailabilityForDate: (date: Date) => DayAvailability;
+  isSlotBooked: (date: Date, hour: number) => boolean;
+  getBookingForSlot: (date: Date, hour: number) => Booking | undefined;
+  getUserBookings: (userId: string) => Booking[];
+  getBookingsByDate: (date: Date) => Booking[];
+  createBooking: (userId: string, userName: string, userPhone: string, subscriptionId: string, date: Date, hour: number) => BookingResult;
+  cancelBooking: (bookingId: string, reason?: string) => void;
+  completeBooking: (bookingId: string) => void;
+  markNoShow: (bookingId: string) => void;
+  getAllBookings: () => Booking[];
+  getStats: () => BookingStats;
+}
 
-  // Obtener disponibilidad del entrenador para una fecha
-  const getAvailabilityForDate = (date) => {
+const BookingContext = createContext<BookingContextType | null>(null);
+
+interface BookingProviderProps {
+  children: ReactNode;
+}
+
+export const BookingProvider = ({ children }: BookingProviderProps) => {
+  const [bookings, setBookings] = useState<Booking[]>([...initialBookings]);
+
+  const generateHours = (start: number, end: number): number[] => {
+    const hours: number[] = [];
+    for (let h = start; h < end; h++) {
+      hours.push(h);
+    }
+    return hours;
+  };
+
+  const getAvailabilityForDate = (date: Date): DayAvailability => {
     const dateObj = new Date(date);
     const dayOfWeek = dateObj.getDay();
     const dateStr = dateObj.toISOString().split('T')[0];
     
-    // Verificar excepciones primero
     const exception = availabilityExceptions.find(e => e.exceptionDate === dateStr);
     if (exception) {
       if (!exception.isAvailable) return { available: false, hours: [], reason: exception.reason };
       return { 
         available: true, 
-        hours: generateHours(exception.startHour, exception.endHour),
+        hours: generateHours(exception.startHour!, exception.endHour!),
         reason: exception.reason 
       };
     }
     
-    // Usar disponibilidad normal
     const dayAvail = trainerAvailability.find(a => a.dayOfWeek === dayOfWeek);
     if (!dayAvail || !dayAvail.isActive) {
       return { available: false, hours: [], reason: 'Día no laborable' };
@@ -31,21 +62,11 @@ export const BookingProvider = ({ children }) => {
     
     return { 
       available: true, 
-      hours: generateHours(dayAvail.startHour, dayAvail.endHour) 
+      hours: generateHours(dayAvail.startHour!, dayAvail.endHour!) 
     };
   };
 
-  // Generar array de horas
-  const generateHours = (start, end) => {
-    const hours = [];
-    for (let h = start; h < end; h++) {
-      hours.push(h);
-    }
-    return hours;
-  };
-
-  // Verificar si un slot está ocupado
-  const isSlotBooked = (date, hour) => {
+  const isSlotBooked = (date: Date, hour: number): boolean => {
     const dateStr = new Date(date).toISOString().split('T')[0];
     return bookings.some(
       b => b.bookingDate === dateStr && 
@@ -54,8 +75,7 @@ export const BookingProvider = ({ children }) => {
     );
   };
 
-  // Obtener reserva de un slot
-  const getBookingForSlot = (date, hour) => {
+  const getBookingForSlot = (date: Date, hour: number): Booking | undefined => {
     const dateStr = new Date(date).toISOString().split('T')[0];
     return bookings.find(
       b => b.bookingDate === dateStr && 
@@ -64,37 +84,32 @@ export const BookingProvider = ({ children }) => {
     );
   };
 
-  // Obtener reservas de un usuario
-  const getUserBookings = (userId) => {
+  const getUserBookings = (userId: string): Booking[] => {
     return bookings.filter(b => b.userId === userId).sort(
-      (a, b) => new Date(b.bookingDate) - new Date(a.bookingDate)
+      (a, b) => new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime()
     );
   };
 
-  // Obtener reservas por fecha
-  const getBookingsByDate = (date) => {
+  const getBookingsByDate = (date: Date): Booking[] => {
     const dateStr = new Date(date).toISOString().split('T')[0];
     return bookings.filter(
       b => b.bookingDate === dateStr && b.status !== 'cancelled'
     ).sort((a, b) => a.bookingHour - b.bookingHour);
   };
 
-  // Crear nueva reserva
-  const createBooking = (userId, userName, userPhone, subscriptionId, date, hour) => {
+  const createBooking = (userId: string, userName: string, userPhone: string, subscriptionId: string, date: Date, hour: number): BookingResult => {
     const dateStr = new Date(date).toISOString().split('T')[0];
     
-    // Verificar disponibilidad
     if (isSlotBooked(date, hour)) {
       return { success: false, error: 'Este horario ya está ocupado' };
     }
 
-    // Verificar que el día esté disponible
     const availability = getAvailabilityForDate(date);
     if (!availability.available || !availability.hours.includes(hour)) {
       return { success: false, error: 'Horario no disponible' };
     }
 
-    const newBooking = {
+    const newBooking: Booking = {
       id: `book-${Date.now()}`,
       userId,
       subscriptionId,
@@ -110,7 +125,6 @@ export const BookingProvider = ({ children }) => {
 
     setBookings(prev => [...prev, newBooking]);
 
-    // Actualizar clases restantes en suscripción (mock)
     const sub = subscriptions.find(s => s.id === subscriptionId);
     if (sub) {
       sub.remainingClasses -= 1;
@@ -119,11 +133,9 @@ export const BookingProvider = ({ children }) => {
     return { success: true, booking: newBooking };
   };
 
-  // Cancelar reserva
-  const cancelBooking = (bookingId, reason = '') => {
+  const cancelBooking = (bookingId: string, reason = '') => {
     setBookings(prev => prev.map(b => {
       if (b.id === bookingId) {
-        // Devolver clase a la suscripción
         const sub = subscriptions.find(s => s.id === b.subscriptionId);
         if (sub) {
           sub.remainingClasses += 1;
@@ -131,7 +143,7 @@ export const BookingProvider = ({ children }) => {
         
         return {
           ...b,
-          status: 'cancelled',
+          status: 'cancelled' as const,
           cancelledAt: new Date().toISOString(),
           cancelReason: reason
         };
@@ -140,25 +152,21 @@ export const BookingProvider = ({ children }) => {
     }));
   };
 
-  // Completar reserva (para admin)
-  const completeBooking = (bookingId) => {
+  const completeBooking = (bookingId: string) => {
     setBookings(prev => prev.map(b => 
-      b.id === bookingId ? { ...b, status: 'completed' } : b
+      b.id === bookingId ? { ...b, status: 'completed' as const } : b
     ));
   };
 
-  // Marcar no-show
-  const markNoShow = (bookingId) => {
+  const markNoShow = (bookingId: string) => {
     setBookings(prev => prev.map(b => 
-      b.id === bookingId ? { ...b, status: 'no_show' } : b
+      b.id === bookingId ? { ...b, status: 'no_show' as const } : b
     ));
   };
 
-  // Obtener todas las reservas (para admin)
-  const getAllBookings = () => bookings;
+  const getAllBookings = (): Booking[] => bookings;
 
-  // Estadísticas
-  const getStats = () => {
+  const getStats = (): BookingStats => {
     const today = new Date().toISOString().split('T')[0];
     const thisMonth = new Date().toISOString().slice(0, 7);
     
@@ -192,7 +200,7 @@ export const BookingProvider = ({ children }) => {
   );
 };
 
-export const useBooking = () => {
+export const useBooking = (): BookingContextType => {
   const context = useContext(BookingContext);
   if (!context) {
     throw new Error('useBooking must be used within a BookingProvider');

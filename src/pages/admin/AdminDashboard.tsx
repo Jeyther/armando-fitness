@@ -5,6 +5,13 @@ import { users, subscriptions } from '../../data/mockData';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+interface StatCard {
+  label: string;
+  value: number;
+  icon: typeof Users;
+  color: string;
+}
+
 export default function AdminDashboard() {
   const { getStats, getBookingsByDate, getAllBookings } = useBooking();
   const stats = getStats();
@@ -14,13 +21,12 @@ export default function AdminDashboard() {
   const activeClients = users.filter(u => u.role === 'client' && u.isActive).length;
   const activeSubs = subscriptions.filter(s => s.status === 'active').length;
   
-  // Próximas clases (siguiente semana)
   const upcomingBookings = allBookings
     .filter(b => b.status === 'confirmed' && new Date(b.bookingDate) >= new Date())
-    .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+    .sort((a, b) => new Date(a.bookingDate).getTime() - new Date(b.bookingDate).getTime())
     .slice(0, 5);
 
-  const statCards = [
+  const statCards: StatCard[] = [
     { label: 'Clientes Activos', value: activeClients, icon: Users, color: 'bg-blue-500' },
     { label: 'Suscripciones', value: activeSubs, icon: TrendingUp, color: 'bg-green-500' },
     { label: 'Clases Hoy', value: stats.today, icon: Calendar, color: 'bg-purple-500' },
@@ -29,7 +35,6 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((stat) => (
           <div key={stat.label} className="bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
@@ -47,7 +52,6 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Clases de Hoy */}
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
           <div className="p-6 border-b border-gray-100 dark:border-zinc-800">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Clases de Hoy</h2>
@@ -85,7 +89,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Próximas Clases */}
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
           <div className="p-6 border-b border-gray-100 dark:border-zinc-800">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Próximas Clases</h2>

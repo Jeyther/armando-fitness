@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ReactNode } from 'react';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import LandingPage from './pages/LandingPage';
@@ -12,20 +13,22 @@ import { ThemeProvider } from './context/ThemeContext';
 import { BookingProvider } from './context/BookingContext';
 import { UserProvider } from './context/UserContext';
 
-// Ruta protegida para clientes
-const ClientRoute = ({ children }) => {
+interface RouteGuardProps {
+  children: ReactNode;
+}
+
+const ClientRoute = ({ children }: RouteGuardProps) => {
   const { user, isClient } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
   if (!isClient) return <Navigate to="/admin" replace />;
-  return children;
+  return <>{children}</>;
 };
 
-// Ruta protegida para admin
-const AdminRoute = ({ children }) => {
+const AdminRoute = ({ children }: RouteGuardProps) => {
   const { user, isAdmin } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
   if (!isAdmin) return <Navigate to="/dashboard" replace />;
-  return children;
+  return <>{children}</>;
 };
 
 function AppContent() {

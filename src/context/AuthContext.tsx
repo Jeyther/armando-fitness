@@ -1,37 +1,52 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { users, subscriptions } from '../data/mockData';
+import type { AuthUser, LoginResult } from '../types';
 
-const AuthContext = createContext(null);
+interface AuthContextType {
+  user: AuthUser | null;
+  login: (email: string, password: string) => LoginResult;
+  logout: () => void;
+  isAdmin: boolean;
+  isClient: boolean;
+  updateRemainingClasses: (delta: number) => void;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
-  const login = (email, password) => {
-    // Buscar usuario en mockData
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  const login = (email: string, _password: string): LoginResult => {
     const foundUser = users.find(u => u.email === email && u.isActive);
     
     if (foundUser) {
-      // Buscar suscripción activa si es cliente
       let subscription = null;
       if (foundUser.role === 'client') {
-        subscription = subscriptions.find(
+        const sub = subscriptions.find(
           s => s.userId === foundUser.id && s.status === 'active'
         );
+        if (sub) {
+          subscription = {
+            id: sub.id,
+            planId: sub.planId,
+            planName: sub.plan?.name || 'Plan',
+            remainingClasses: sub.remainingClasses,
+            endDate: sub.endDate
+          };
+        }
       }
 
-      const loggedUser = {
+      const loggedUser: AuthUser = {
         id: foundUser.id,
         email: foundUser.email,
         name: foundUser.name,
         phone: foundUser.phone,
         role: foundUser.role,
-        subscription: subscription ? {
-          id: subscription.id,
-          planId: subscription.planId,
-          planName: subscription.plan?.name || 'Plan',
-          remainingClasses: subscription.remainingClasses,
-          endDate: subscription.endDate
-        } : null
+        subscription
       };
 
       setUser(loggedUser);
@@ -45,15 +60,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const updateRemainingClasses = (delta) => {
+  const updateRemainingClasses = (delta: number) => {
     if (user && user.subscription) {
-      setUser(prev => ({
+      setUser(prev => prev ? ({
         ...prev,
-        subscription: {
+        subscription: prev.subscription ? {
           ...prev.subscription,
           remainingClasses: prev.subscription.remainingClasses + delta
-        }
-      }));
+        } : null
+      }) : null);
     }
   };
 
@@ -74,7 +89,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

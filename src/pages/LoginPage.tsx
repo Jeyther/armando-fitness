@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Dumbbell, AlertCircle } from 'lucide-react';
+
+interface DemoCredential {
+  email: string;
+  role: string;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,15 +15,14 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
 
     const result = login(email, password);
 
     if (result.success) {
-      // Redirigir según rol
-      if (result.user.role === 'admin') {
+      if (result.user?.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/dashboard');
@@ -28,14 +32,13 @@ export default function LoginPage() {
     }
   };
 
-  // Demo credentials
-  const demoCredentials = [
+  const demoCredentials: DemoCredential[] = [
     { email: 'maria@email.com', role: 'Cliente (Plan Pro)' },
     { email: 'carlos@email.com', role: 'Cliente (Plan Básico)' },
     { email: 'armando@armandofitness.com', role: 'Administrador' },
   ];
 
-  const fillDemo = (demoEmail) => {
+  const fillDemo = (demoEmail: string) => {
     setEmail(demoEmail);
     setPassword('demo123');
     setError('');
@@ -56,13 +59,13 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Demo Credentials */}
         <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-4">
           <p className="text-sm font-medium text-primary-800 dark:text-primary-300 mb-2">Credenciales de demostración:</p>
           <div className="space-y-2">
             {demoCredentials.map((cred) => (
               <button
                 key={cred.email}
+                type="button"
                 onClick={() => fillDemo(cred.email)}
                 className="w-full text-left px-3 py-2 text-sm bg-white dark:bg-zinc-800 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
               >

@@ -3,25 +3,35 @@ import {
   LayoutDashboard, 
   Users, 
   Calendar, 
-  Settings, 
   LogOut, 
   Dumbbell,
   Moon,
   Sun,
   Menu,
-  X
+  X,
+  LucideIcon
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
-const navItems = [
+interface NavItem {
+  path: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+const navItems: NavItem[] = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/admin/users', icon: Users, label: 'Clientes' },
   { path: '/admin/schedule', icon: Calendar, label: 'Horarios' },
 ];
 
-export default function AdminLayout({ children }) {
+interface AdminLayoutProps {
+  children: ReactNode;
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,7 +45,6 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-zinc-950">
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -43,10 +52,8 @@ export default function AdminLayout({ children }) {
         />
       )}
 
-      {/* Sidebar */}
       <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-zinc-800">
             <Link to="/admin" className="flex items-center gap-2">
               <Dumbbell className="h-8 w-8 text-primary-600" />
@@ -59,7 +66,6 @@ export default function AdminLayout({ children }) {
             </button>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -81,7 +87,6 @@ export default function AdminLayout({ children }) {
             })}
           </nav>
 
-          {/* User section */}
           <div className="p-4 border-t border-gray-200 dark:border-zinc-800">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
@@ -113,9 +118,7 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="lg:pl-64">
-        {/* Top bar */}
         <header className="sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 h-16 flex items-center px-4 lg:px-8">
           <button 
             onClick={() => setSidebarOpen(true)}
@@ -130,7 +133,6 @@ export default function AdminLayout({ children }) {
           </div>
         </header>
 
-        {/* Page content */}
         <main className="p-4 lg:p-8">
           {children}
         </main>

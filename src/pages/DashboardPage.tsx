@@ -11,12 +11,12 @@ export default function DashboardPage() {
   const { getUserBookings, cancelBooking } = useBooking();
   const navigate = useNavigate();
 
-  const myBookings = getUserBookings(user?.id);
+  const myBookings = getUserBookings(user?.id || '');
   const upcomingBookings = myBookings
     .filter(b => b.status === 'confirmed' && new Date(b.bookingDate) >= new Date())
     .slice(0, 3);
 
-  const handleCancel = (bookingId) => {
+  const handleCancel = (bookingId: string) => {
     if (confirm('¿Estás seguro de cancelar esta reserva?')) {
       cancelBooking(bookingId, 'Cancelado por el cliente');
     }
@@ -29,7 +29,6 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl">
@@ -58,7 +57,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar */}
         <div className="lg:col-span-2 bg-white dark:bg-zinc-900 shadow-sm rounded-xl p-6 border border-gray-100 dark:border-zinc-800">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <CalendarIcon className="h-5 w-5 text-primary-600" />
@@ -67,7 +65,6 @@ export default function DashboardPage() {
           <Calendar />
         </div>
 
-        {/* Upcoming Classes */}
         <div className="bg-white dark:bg-zinc-900 shadow-sm rounded-xl p-6 border border-gray-100 dark:border-zinc-800 h-fit">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary-600" />
@@ -110,7 +107,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Recent History */}
           {myBookings.filter(b => b.status === 'completed').length > 0 && (
             <div className="mt-6 pt-6 border-t border-gray-100 dark:border-zinc-800">
               <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Clases completadas</h4>

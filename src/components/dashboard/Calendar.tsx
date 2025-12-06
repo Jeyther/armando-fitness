@@ -1,34 +1,35 @@
 import { useState } from 'react';
-import { format, startOfWeek, addDays, isSameDay, isBefore, startOfDay } from 'date-fns';
+import { format, startOfWeek, addDays, isSameDay, isBefore } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 
+interface SelectedSlot {
+  day: Date;
+  hour: number;
+}
+
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
   const { user, updateRemainingClasses } = useAuth();
   const { getAvailabilityForDate, isSlotBooked, getBookingForSlot, createBooking } = useBooking();
 
   const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 
-  const handleSlotClick = (day, hour) => {
-    // No permitir reservar en el pasado
+  const handleSlotClick = (day: Date, hour: number) => {
     const slotDate = new Date(day);
     slotDate.setHours(hour, 0, 0, 0);
     if (isBefore(slotDate, new Date())) return;
 
-    // Verificar disponibilidad
     const availability = getAvailabilityForDate(day);
     if (!availability.available || !availability.hours.includes(hour)) return;
 
-    // Verificar si ya está ocupado
     if (isSlotBooked(day, hour)) return;
 
-    // Verificar clases disponibles
-    if (!user.subscription || user.subscription.remainingClasses <= 0) {
+    if (!user?.subscription || user.subscription.remainingClasses <= 0) {
       alert('No tienes clases disponibles en tu plan');
       return;
     }
@@ -37,7 +38,7 @@ export default function Calendar() {
   };
 
   const handleConfirmBooking = () => {
-    if (!selectedSlot || !user.subscription) return;
+    if (!selectedSlot || !user?.subscription) return;
 
     const result = createBooking(
       user.id,
@@ -61,12 +62,12 @@ export default function Calendar() {
   const nextWeek = () => setCurrentDate(addDays(currentDate, 7));
   const prevWeek = () => setCurrentDate(addDays(currentDate, -7));
 
-  const renderSlot = (day, hour) => {
+  const renderSlot = (day: Date, hour: number) => {
     const availability = getAvailabilityForDate(day);
     const isAvailable = availability.available && availability.hours.includes(hour);
     const booked = isSlotBooked(day, hour);
     const booking = booked ? getBookingForSlot(day, hour) : null;
-    const isMyBooking = booking?.userId === user.id;
+    const isMyBooking = booking?.userId === user?.id;
     
     const slotDate = new Date(day);
     slotDate.setHours(hour, 0, 0, 0);
@@ -78,7 +79,7 @@ export default function Calendar() {
 
     if (!isAvailable || isPast) {
       bgClass = 'bg-gray-100 dark:bg-zinc-800/50';
-      content = null;
+      content = <span className="text-transparent">.</span>;
       cursor = 'cursor-not-allowed';
     } else if (booked) {
       if (isMyBooking) {
@@ -108,14 +109,13 @@ export default function Calendar() {
 
   return (
     <div className="flex flex-col h-[550px] relative">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
             {format(currentDate, 'MMMM yyyy', { locale: es })}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Clases disponibles: <span className="font-bold text-primary-600">{user.subscription?.remainingClasses || 0}</span>
+            Clases disponibles: <span className="font-bold text-primary-600">{user?.subscription?.remainingClasses || 0}</span>
           </p>
         </div>
         <div className="flex space-x-2">
@@ -128,10 +128,8 @@ export default function Calendar() {
         </div>
       </div>
 
-      {/* Calendar Grid */}
       <div className="flex-1 overflow-auto border rounded-lg border-gray-200 dark:border-zinc-700">
         <div className="min-w-[700px]">
-          {/* Days Header */}
           <div className="grid grid-cols-8 border-b border-gray-200 dark:border-zinc-700 sticky top-0 bg-white dark:bg-zinc-900 z-10">
             <div className="p-3 text-center font-semibold text-gray-500 border-r dark:border-zinc-800 text-sm">
               <Clock className="h-4 w-4 mx-auto" />
@@ -147,9 +145,7 @@ export default function Calendar() {
             })}
           </div>
 
-          {/* Time Slots */}
           <div className="grid grid-cols-8">
-            {/* Hours Column */}
             <div className="col-span-1">
               {Array.from({ length: 15 }, (_, i) => i + 6).map((hour) => (
                 <div key={hour} className="h-14 flex items-center justify-center border-b border-r border-gray-100 dark:border-zinc-800 text-xs text-gray-500 font-medium">
@@ -158,7 +154,6 @@ export default function Calendar() {
               ))}
             </div>
 
-            {/* Days Slots */}
             {weekDays.map((day) => (
               <div key={day.toString()} className="col-span-1 border-r last:border-r-0 border-gray-200 dark:border-zinc-800">
                 {Array.from({ length: 15 }, (_, i) => i + 6).map((hour) => renderSlot(day, hour))}
@@ -168,7 +163,6 @@ export default function Calendar() {
         </div>
       </div>
 
-      {/* Booking Modal */}
       {selectedSlot && (
         <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg">
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 border border-gray-200 dark:border-zinc-700">
@@ -178,7 +172,7 @@ export default function Calendar() {
             </p>
             <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 mb-6">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Te quedarán <span className="font-bold text-primary-600">{(user.subscription?.remainingClasses || 1) - 1}</span> clases después de esta reserva.
+                Te quedarán <span className="font-bold text-primary-600">{(user?.subscription?.remainingClasses || 1) - 1}</span> clases después de esta reserva.
               </p>
             </div>
             <div className="flex justify-end gap-3">

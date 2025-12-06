@@ -16,17 +16,16 @@ export default function AdminSchedule() {
   const prevWeek = () => setCurrentDate(subWeeks(currentDate, 1));
   const goToToday = () => setCurrentDate(new Date());
 
-  const handleComplete = (bookingId) => {
+  const handleComplete = (bookingId: string) => {
     completeBooking(bookingId);
   };
 
-  const handleNoShow = (bookingId) => {
+  const handleNoShow = (bookingId: string) => {
     markNoShow(bookingId);
   };
 
   return (
     <AdminLayout>
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Calendario de Clases</h2>
@@ -53,7 +52,6 @@ export default function AdminSchedule() {
         </div>
       </div>
 
-      {/* Week Grid */}
       <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
         {weekDays.map((day) => {
           const isToday = isSameDay(day, new Date());
@@ -69,7 +67,6 @@ export default function AdminSchedule() {
                   : 'border-gray-100 dark:border-zinc-800'
               }`}
             >
-              {/* Day Header */}
               <div className={`p-3 border-b border-gray-100 dark:border-zinc-800 ${
                 isToday ? 'bg-primary-50 dark:bg-primary-900/20' : 'bg-gray-50 dark:bg-zinc-800'
               }`}>
@@ -86,7 +83,6 @@ export default function AdminSchedule() {
                 )}
               </div>
 
-              {/* Bookings */}
               <div className="p-3 space-y-2 min-h-[200px]">
                 {availability.available ? (
                   bookings.length > 0 ? (
@@ -158,7 +154,6 @@ export default function AdminSchedule() {
         })}
       </div>
 
-      {/* Legend */}
       <div className="mt-6 flex flex-wrap gap-4 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-primary-100 border border-primary-200"></div>

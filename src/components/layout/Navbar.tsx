@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Dumbbell, Moon, Sun } from 'lucide-react';
-import { useState } from 'react';
+import { useState, MouseEvent } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function Navbar() {
@@ -11,20 +11,17 @@ export default function Navbar() {
   
   const isLandingPage = location.pathname === '/';
 
-  const handleNavClick = (e, sectionId) => {
+  const handleNavClick = (e: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault();
     setIsOpen(false);
     
     if (isLandingPage) {
-      // If on landing page, just scroll to section
       const element = document.getElementById(sectionId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
     } else {
-      // If on another page, navigate to home then scroll
       navigate('/');
-      // Wait for navigation then scroll
       setTimeout(() => {
         const element = document.getElementById(sectionId);
         if (element) {
@@ -78,7 +75,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden absolute w-full bg-white dark:bg-zinc-900 border-b border-gray-100 dark:border-zinc-800">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-center">

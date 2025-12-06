@@ -1,22 +1,22 @@
-/**
- * MOCK DATA - Armando Fitness
- * 
- * Datos ficticios compatibles con la estructura de base de datos.
- * Los nombres de campos usan camelCase (convención JS) pero 
- * corresponden a las columnas snake_case de MySQL.
- * 
- * Cuando conectes el backend, estos datos vendrán de la API
- * con la misma estructura.
- */
+import type { 
+  User, 
+  Plan, 
+  Subscription, 
+  TrainerAvailability, 
+  AvailabilityException, 
+  Booking, 
+  Notification,
+  DashboardStats 
+} from '../types';
 
 // ============================================
-// USERS - Usuarios del sistema
+// USERS
 // ============================================
-export const users = [
+export const users: User[] = [
   {
     id: 'admin-001',
     email: 'armando@armandofitness.com',
-    name: 'Luis Armando Incio',
+    name: 'Armando García',
     phone: '+1 555 123 4567',
     role: 'admin',
     avatarUrl: null,
@@ -82,9 +82,9 @@ export const users = [
 ];
 
 // ============================================
-// PLANS - Planes de suscripción
+// PLANS
 // ============================================
-export const plans = [
+export const plans: Plan[] = [
   {
     id: 'plan-basic',
     name: 'Básico',
@@ -139,9 +139,9 @@ export const plans = [
 ];
 
 // ============================================
-// SUBSCRIPTIONS - Suscripciones activas
+// SUBSCRIPTIONS
 // ============================================
-export const subscriptions = [
+export const subscriptions: Subscription[] = [
   {
     id: 'sub-001',
     userId: 'user-001',
@@ -152,7 +152,6 @@ export const subscriptions = [
     status: 'active',
     paymentStatus: 'paid',
     createdAt: '2024-12-01T08:00:00.000Z',
-    // Datos poblados (para mostrar en UI)
     user: { id: 'user-001', name: 'María López', email: 'maria@email.com' },
     plan: { id: 'plan-pro', name: 'Pro', classesPerMonth: 9 }
   },
@@ -211,9 +210,9 @@ export const subscriptions = [
 ];
 
 // ============================================
-// TRAINER AVAILABILITY - Horario semanal
+// TRAINER AVAILABILITY
 // ============================================
-export const trainerAvailability = [
+export const trainerAvailability: TrainerAvailability[] = [
   { id: 'avail-0', dayOfWeek: 0, dayName: 'Domingo', startHour: null, endHour: null, isActive: false },
   { id: 'avail-1', dayOfWeek: 1, dayName: 'Lunes', startHour: 6, endHour: 21, isActive: true },
   { id: 'avail-2', dayOfWeek: 2, dayName: 'Martes', startHour: 6, endHour: 21, isActive: true },
@@ -224,9 +223,9 @@ export const trainerAvailability = [
 ];
 
 // ============================================
-// AVAILABILITY EXCEPTIONS - Días especiales
+// AVAILABILITY EXCEPTIONS
 // ============================================
-export const availabilityExceptions = [
+export const availabilityExceptions: AvailabilityException[] = [
   {
     id: 'exc-001',
     exceptionDate: '2024-12-25',
@@ -266,9 +265,9 @@ export const availabilityExceptions = [
 ];
 
 // ============================================
-// BOOKINGS - Reservas de clases
+// BOOKINGS
 // ============================================
-export const bookings = [
+export const bookings: Booking[] = [
   {
     id: 'book-001',
     userId: 'user-001',
@@ -280,7 +279,6 @@ export const bookings = [
     cancelledAt: null,
     cancelReason: null,
     createdAt: '2024-12-01T08:30:00.000Z',
-    // Datos poblados
     user: { id: 'user-001', name: 'María López', phone: '+1 555 234 5678' }
   },
   {
@@ -361,7 +359,6 @@ export const bookings = [
     createdAt: '2024-12-05T09:30:00.000Z',
     user: { id: 'user-003', name: 'Ana Martínez', phone: '+1 555 456 7890' }
   },
-  // Ejemplo de reserva cancelada
   {
     id: 'book-008',
     userId: 'user-002',
@@ -375,7 +372,6 @@ export const bookings = [
     createdAt: '2024-12-03T11:00:00.000Z',
     user: { id: 'user-002', name: 'Carlos Rodríguez', phone: '+1 555 345 6789' }
   },
-  // Ejemplo de reserva completada
   {
     id: 'book-009',
     userId: 'user-001',
@@ -392,9 +388,9 @@ export const bookings = [
 ];
 
 // ============================================
-// NOTIFICATIONS - Notificaciones pendientes
+// NOTIFICATIONS
 // ============================================
-export const notifications = [
+export const notifications: Notification[] = [
   {
     id: 'notif-001',
     userId: 'user-001',
@@ -434,9 +430,9 @@ export const notifications = [
 ];
 
 // ============================================
-// ESTADÍSTICAS DEL DASHBOARD (pre-calculadas)
+// DASHBOARD STATS
 // ============================================
-export const dashboardStats = {
+export const dashboardStats: DashboardStats = {
   totalClients: 5,
   activeSubscriptions: 5,
   classesThisMonth: 42,
@@ -459,9 +455,6 @@ export const dashboardStats = {
   ]
 };
 
-// ============================================
-// EXPORT DEFAULT
-// ============================================
 export default {
   users,
   plans,
